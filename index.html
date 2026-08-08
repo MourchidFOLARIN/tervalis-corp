@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tervalis-Corp — Infrastructures numériques industrielles</title>
+<meta name="description" content="Tervalis-Corp conçoit et exploite des infrastructures numériques critiques pour l'industrie ouest-africaine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1116;
+    --ink-soft:#171B22;
+    --panel:#12161D;
+    --line:#232935;
+    --steel:#7FA8C9;
+    --steel-dim:#4E6C86;
+    --signal:#4FE0C1;
+    --paper:#E9EDF2;
+    --paper-dim:#8B93A1;
+    --warn:#E0A64F;
+    --radius:2px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  h1,h2,h3, .display{
+    font-family:'Space Grotesk', sans-serif;
+    letter-spacing:-0.01em;
+  }
+  .mono{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.02em;
+  }
+  a{color:inherit; text-decoration:none;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+
+  /* ---------- Background grid signature ---------- */
+  #grid-canvas{
+    position:fixed; inset:0; width:100%; height:100%;
+    z-index:0; opacity:0.55; pointer-events:none;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(14,17,22,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    height:72px;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-size:17px; font-weight:600;
+  }
+  .logo-mark{
+    width:22px; height:22px; position:relative; flex:none;
+  }
+  .logo-mark span{
+    position:absolute; width:8px; height:8px; background:var(--signal);
+    border-radius:1px;
+  }
+  .logo-mark span:nth-child(1){top:0; left:0;}
+  .logo-mark span:nth-child(2){top:0; right:0; background:var(--steel);}
+  .logo-mark span:nth-child(3){bottom:0; left:0; background:var(--steel);}
+  .logo-mark span:nth-child(4){bottom:0; right:0; background:var(--paper-dim);}
+
+  nav ul{list-style:none; display:flex; gap:36px;}
+  nav ul li a{
+    font-size:14px; color:var(--paper-dim); font-weight:500;
+    transition:color .2s ease; position:relative;
+  }
+  nav ul li a:hover{color:var(--paper);}
+  .nav-cta{
+    font-size:13px; font-weight:600; padding:10px 18px;
+    border:1px solid var(--steel-dim); color:var(--steel);
+    border-radius:var(--radius); transition:all .2s ease;
+  }
+  .nav-cta:hover{background:var(--steel); color:var(--ink); border-color:var(--steel);}
+  .burger{display:none; flex-direction:column; gap:5px; cursor:pointer; z-index:60;}
+  .burger span{width:22px; height:2px; background:var(--paper);}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; z-index:1;
+    padding:120px 0 96px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--signal); font-weight:500;
+    text-transform:uppercase; letter-spacing:0.12em;
+    margin-bottom:24px;
+    opacity:0; animation:fadeUp .7s ease forwards;
+  }
+  .eyebrow::before{
+    content:''; width:6px; height:6px; background:var(--signal); border-radius:50%;
+    animation:pulse 2s infinite;
+  }
+  .hero h1{
+    font-size:clamp(38px, 5.2vw, 66px);
+    font-weight:600;
+    line-height:1.06;
+    max-width:820px;
+    opacity:0; animation:fadeUp .7s ease .1s forwards;
+  }
+  .hero h1 em{
+    font-style:normal; color:var(--steel);
+  }
+  .hero p.lede{
+    margin-top:26px; max-width:560px;
+    font-size:17px; color:var(--paper-dim);
+    opacity:0; animation:fadeUp .7s ease .2s forwards;
+  }
+  .hero-actions{
+    margin-top:40px; display:flex; gap:16px; align-items:center;
+    opacity:0; animation:fadeUp .7s ease .3s forwards;
+  }
+  .btn-primary{
+    background:var(--signal); color:var(--ink);
+    padding:14px 26px; font-weight:600; font-size:14px;
+    border-radius:var(--radius);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 8px 24px rgba(79,224,193,0.18);}
+  .btn-ghost{
+    font-size:14px; color:var(--paper-dim); font-weight:500;
+    display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid transparent; transition:border-color .2s ease;
+  }
+  .btn-ghost:hover{border-color:var(--paper-dim);}
+
+  .stat-strip{
+    margin-top:80px; display:grid; grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--line);
+    opacity:0; animation:fadeUp .7s ease .4s forwards;
+  }
+  .stat-strip div{
+    padding:22px 0 0; border-right:1px solid var(--line);
+  }
+  .stat-strip div:last-child{border-right:none;}
+  .stat-strip .num{font-size:26px; font-weight:600; font-family:'Space Grotesk';}
+  .stat-strip .lbl{font-size:12.5px; color:var(--paper-dim); margin-top:4px;}
+
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  /* ---------- Section shared ---------- */
+  section{position:relative; z-index:1; padding:96px 0; border-bottom:1px solid var(--line);}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:56px; gap:40px; flex-wrap:wrap;}
+  .section-tag{font-size:12px; color:var(--steel); text-transform:uppercase; letter-spacing:.12em; font-weight:500; margin-bottom:10px;}
+  .section-head h2{font-size:clamp(26px,3vw,36px); font-weight:600; max-width:520px;}
+  .section-head p{color:var(--paper-dim); max-width:340px; font-size:14.5px;}
+
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* ---------- Services ---------- */
+  .services-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .svc{background:var(--ink); padding:36px 30px; transition:background .25s ease;}
+  .svc:hover{background:var(--ink-soft);}
+  .svc .idx{font-family:'IBM Plex Mono'; font-size:12px; color:var(--steel-dim); margin-bottom:22px;}
+  .svc h3{font-size:18px; font-weight:600; margin-bottom:10px;}
+  .svc p{font-size:14px; color:var(--paper-dim); line-height:1.65;}
+
+  /* ---------- Sectors ---------- */
+  .sectors{display:flex; flex-direction:column; border:1px solid var(--line);}
+  .sector-row{
+    display:grid; grid-template-columns:60px 1fr 160px;
+    align-items:center; padding:26px 28px; border-bottom:1px solid var(--line);
+    transition:background .2s ease;
+  }
+  .sector-row:last-child{border-bottom:none;}
+  .sector-row:hover{background:var(--ink-soft);}
+  .sector-row .mono{color:var(--steel-dim); font-size:13px;}
+  .sector-row h4{font-size:17px; font-weight:600;}
+  .sector-row .region{font-size:12.5px; color:var(--paper-dim); text-align:right;}
+
+  /* ---------- Trust / clients strip ---------- */
+  .trust-strip{
+    display:flex; gap:48px; flex-wrap:wrap; align-items:center;
+    padding:40px 0; opacity:.7; font-family:'IBM Plex Mono'; font-size:13px; color:var(--paper-dim);
+  }
+
+  /* ---------- Contact ---------- */
+  .contact-panel{
+    background:var(--panel); border:1px solid var(--line);
+    padding:56px; display:grid; grid-template-columns:1fr 1fr; gap:60px;
+  }
+  .contact-panel h2{font-size:28px; font-weight:600; margin-bottom:16px;}
+  .contact-panel p{color:var(--paper-dim); font-size:14.5px; max-width:380px;}
+  .contact-detail{margin-top:28px;}
+  .contact-detail div{font-size:12px; color:var(--paper-dim); text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px;}
+  .contact-detail p{color:var(--paper); font-size:15px; margin-bottom:20px; font-family:'IBM Plex Mono';}
+  form{display:flex; flex-direction:column; gap:14px;}
+  form input, form textarea{
+    background:transparent; border:1px solid var(--line); color:var(--paper);
+    padding:13px 14px; font-family:'Inter'; font-size:14px; border-radius:var(--radius);
+  }
+  form input:focus, form textarea:focus{outline:none; border-color:var(--steel);}
+  form textarea{resize:vertical; min-height:90px;}
+  form button{
+    margin-top:6px; background:var(--signal); color:var(--ink); border:none;
+    padding:13px; font-weight:600; font-size:14px; border-radius:var(--radius);
+    cursor:pointer; transition:transform .2s ease;
+  }
+  form button:hover{transform:translateY(-1px);}
+  .form-msg{font-size:13px; color:var(--signal); margin-top:8px; display:none;}
+
+  /* ---------- Footer ---------- */
+  footer{position:relative; z-index:1; padding:40px 0; }
+  .footer-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+  .footer-row p{font-size:12.5px; color:var(--paper-dim);}
+  .footer-links{display:flex; gap:24px; font-size:12.5px; color:var(--paper-dim);}
+  .footer-links a:hover{color:var(--paper);}
+
+  @media (max-width:860px){
+    nav ul, .nav-cta{display:none;}
+    .burger{display:flex;}
+    .services-grid{grid-template-columns:1fr;}
+    .stat-strip{grid-template-columns:repeat(2,1fr);}
+    .contact-panel{grid-template-columns:1fr; padding:32px;}
+    .sector-row{grid-template-columns:40px 1fr; row-gap:6px;}
+    .sector-row .region{grid-column:2; text-align:left;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+
+  :focus-visible{outline:2px solid var(--signal); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<canvas id="grid-canvas"></canvas>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <div class="logo-mark"><span></span><span></span><span></span><span></span></div>
+      TERVALIS-CORP
+    </div>
+    <nav>
+      <ul>
+        <li><a href="#services">Solutions</a></li>
+        <li><a href="#sectors">Secteurs</a></li>
+        <li><a href="#about">Entreprise</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <a href="#contact" class="nav-cta">Nous contacter</a>
+    <div class="burger" id="burger"><span></span><span></span><span></span></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow mono">Systèmes en exploitation — Bénin · Togo · Côte d'Ivoire</div>
+    <h1>L'infrastructure numérique <em>invisible</em> qui fait tourner l'industrie.</h1>
+    <p class="lede">Tervalis-Corp conçoit, déploie et supervise les réseaux et systèmes critiques d'entreprises industrielles et logistiques ouest-africaines — de la supervision réseau à la cybersécurité opérationnelle.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">Demander un audit</a>
+      <a href="#about" class="btn-ghost">→ Découvrir l'entreprise</a>
+    </div>
+    <div class="stat-strip">
+      <div><div class="num">14</div><div class="lbl">sites industriels supervisés</div></div>
+      <div><div class="num">99.2%</div><div class="lbl">disponibilité réseau moyenne</div></div>
+      <div><div class="num">3</div><div class="lbl">pays d'opération</div></div>
+      <div><div class="num">2019</div><div class="lbl">année de fondation</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <div class="section-tag">Solutions</div>
+        <h2>Trois métiers, une même exigence de continuité.</h2>
+      </div>
+      <p>Chaque déploiement est pensé pour tourner sans interruption, y compris dans des environnements industriels contraints.</p>
+    </div>
+    <div class="services-grid reveal">
+      <div class="svc">
+        <div class="idx mono">01</div>
+        <h3>Supervision réseau</h3>
+        <p>Monitoring temps réel des infrastructures critiques, alerting proactif et cartographie continue du parc technique.</p>
+      </div>
+      <div class="svc">
+        <div class="idx mono">02</div>
+        <h3>Cybersécurité opérationnelle</h3>
+        <p>Audit, durcissement des accès et réponse à incident pour environnements industriels et systèmes embarqués.</p>
+      </div>
+      <div class="svc">
+        <div class="idx mono">03</div>
+        <h3>Intégration IoT industrielle</h3>
+        <p>Déploiement de capteurs et passerelles connectées pour la remontée de données terrain vers nos plateformes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sectors">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <div class="section-tag">Secteurs</div>
+        <h2>Des environnements où l'arrêt n'est pas une option.</h2>
+      </div>
+      <p>Portefeuille clients réparti sur des secteurs à forte exigence de disponibilité.</p>
+    </div>
+    <div class="sectors reveal">
+      <div class="sector-row">
+        <div class="mono">A</div>
+        <h4>Logistique portuaire</h4>
+        <div class="region">Cotonou, Lomé</div>
+      </div>
+      <div class="sector-row">
+        <div class="mono">B</div>
+        <h4>Agro-industrie</h4>
+        <div class="region">Zone Sud Bénin</div>
+      </div>
+      <div class="sector-row">
+        <div class="mono">C</div>
+        <h4>Distribution énergétique</h4>
+        <div class="region">Bénin, Togo</div>
+      </div>
+      <div class="sector-row">
+        <div class="mono">D</div>
+        <h4>Finance & Télécoms</h4>
+        <div class="region">Abidjan</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <div class="section-tag">Entreprise</div>
+        <h2>Une équipe technique basée sur le terrain qu'elle supervise.</h2>
+      </div>
+    </div>
+    <div class="reveal" style="max-width:680px; color:var(--paper-dim); font-size:15px; line-height:1.75;">
+      <p>Fondée en 2019, Tervalis-Corp opère depuis Cotonou avec des équipes techniques déployées directement sur les sites industriels de ses clients. Notre approche privilégie une supervision continue plutôt qu'une intervention réactive — chaque incident détecté doit l'être avant qu'il n'affecte la production.</p>
+      <br>
+      <p>L'entreprise maintient une politique stricte de cloisonnement des accès entre environnements de production et environnements de test, conformément aux standards du secteur.</p>
+    </div>
+    <div class="trust-strip reveal">
+      <span>PORT-COTONOU.NET</span>
+      <span>AGRIBEN-GROUP</span>
+      <span>SONEB-INFRA</span>
+      <span>CIV-TELECOM</span>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="contact-panel reveal">
+      <div>
+        <h2>Parlons de votre infrastructure.</h2>
+        <p>Une équipe technique répond sous 48h ouvrées pour toute demande d'audit ou de mise en relation commerciale.</p>
+        <div class="contact-detail">
+          <div>Siège</div>
+          <p>Cotonou, Bénin</p>
+          <div>Contact général</div>
+          <p>contact@tervalis-corp.example</p>
+        </div>
+      </div>
+      <form id="contact-form">
+        <input type="text" placeholder="Nom complet" required>
+        <input type="text" placeholder="Entreprise" >
+        <input type="email" placeholder="Adresse e-mail" required>
+        <textarea placeholder="Décrivez votre besoin"></textarea>
+        <button type="submit">Envoyer la demande</button>
+        <div class="form-msg" id="form-msg">Demande enregistrée. Notre équipe revient vers vous sous 48h.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <p class="mono">© 2026 TERVALIS-CORP — Tous droits réservés</p>
+    <div class="footer-links">
+      <a href="#services">Solutions</a>
+      <a href="#about">Entreprise</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---------- Mobile nav ----------
+const burger = document.getElementById('burger');
+const navUl = document.querySelector('nav ul');
+burger.addEventListener('click', () => {
+  const open = navUl.style.display === 'flex';
+  navUl.style.cssText = open ? '' : 'display:flex; flex-direction:column; position:fixed; top:72px; right:24px; background:#12161D; border:1px solid #232935; padding:20px 28px; gap:18px; z-index:60;';
+});
+
+// ---------- Scroll reveal ----------
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.15 });
+revealEls.forEach(el => io.observe(el));
+
+// ---------- Contact form (demo only, no backend) ----------
+document.getElementById('contact-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  document.getElementById('form-msg').style.display = 'block';
+  this.reset();
+});
+
+// ---------- Signature background: quiet network grid ----------
+const canvas = document.getElementById('grid-canvas');
+const ctx = canvas.getContext('2d');
+let w, h, nodes = [];
+const NODE_COUNT = 46;
+const LINK_DIST = 150;
+
+function resize(){
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = Math.max(window.innerHeight, document.body.scrollHeight);
+}
+function initNodes(){
+  nodes = Array.from({length: NODE_COUNT}, () => ({
+    x: Math.random()*w, y: Math.random()*Math.min(h, window.innerHeight*1.4),
+    vx: (Math.random()-0.5)*0.15, vy: (Math.random()-0.5)*0.15
+  }));
+}
+function step(){
+  ctx.clearRect(0,0,w,h);
+  const bandH = Math.min(h, window.innerHeight*1.4);
+  for(const n of nodes){
+    n.x += n.vx; n.y += n.vy;
+    if(n.x < 0 || n.x > w) n.vx *= -1;
+    if(n.y < 0 || n.y > bandH) n.vy *= -1;
+  }
+  for(let i=0;i<nodes.length;i++){
+    for(let j=i+1;j<nodes.length;j++){
+      const a = nodes[i], b = nodes[j];
+      const dx = a.x-b.x, dy = a.y-b.y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if(dist < LINK_DIST){
+        ctx.strokeStyle = `rgba(127,168,201,${0.10*(1-dist/LINK_DIST)})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+        ctx.stroke();
+      }
+    }
+  }
+  for(const n of nodes){
+    ctx.fillStyle = 'rgba(79,224,193,0.35)';
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 1.6, 0, Math.PI*2);
+    ctx.fill();
+  }
+  requestAnimationFrame(step);
+}
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+resize(); initNodes();
+if(!reduceMotion){ requestAnimationFrame(step); }
+window.addEventListener('resize', () => { resize(); });
+</script>
+
+</body>
+</html>
